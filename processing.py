@@ -16,7 +16,7 @@ def zipped_file(f):
     return True if ".gz" in f else False
 
 def merge_station_data(path):
-    """ unzipping compressed files in challenge_data """
+    """ merging all stations data into a single row-indexed dataframe """
     data = None
     stations = [f for f in listdir(path) if zipped_file(f)]
     for station in stations:
@@ -30,11 +30,12 @@ def merge_station_data(path):
             else:
                 data = df
                 print data.shape
-        #break
+    data = data.reset_index()
     return data
 
 
 def jsonr_to_df(filename):
+    """ converting json file to a cleaned dataframe """
     with gzip.open(filename, 'rb') as f:
         # ==> Loading and parsing compressed files
         station_data = json.loads(f.read())
@@ -45,11 +46,6 @@ def jsonr_to_df(filename):
             df["lat"]=df["position"].map(lambda x: x['lat'])
             df["lng"]=df["position"].map(lambda x: x['lng'])
             del df["position"]
-            # ==> Setting Multi-index
-            df.set_index(["number",'last_update'],drop=True,inplace=True)
-            # ==> Sorting by timestamp
-            df.sortlevel(1,inplace=True)
-            # ==> Indexing by
             return df
         else:
             return None
